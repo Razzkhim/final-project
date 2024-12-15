@@ -5,7 +5,6 @@ import (
 	"final-project/internal/handlers"
 	"final-project/internal/middleware"
 	"final-project/tests"
-	"fmt"
 	"github.com/joho/godotenv"
 	"log"
 	_ "modernc.org/sqlite"
@@ -18,7 +17,7 @@ func main() {
 
 	err := godotenv.Load()
 	if err != nil {
-		fmt.Println("Error loading .env file")
+		log.Fatalf("Error loading .env file: %v", err)
 	}
 
 	port, err := strconv.Atoi(os.Getenv("TODO_PORT"))
@@ -49,12 +48,12 @@ func main() {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	}))
-	http.HandleFunc("/api/tasks", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/api/tasks", middleware.Auth(func(w http.ResponseWriter, r *http.Request) {
 		handlers.GetTasksHandler(w, r, db)
-	})
-	http.HandleFunc("/api/task/done", func(w http.ResponseWriter, r *http.Request) {
+	}))
+	http.HandleFunc("/api/task/done", middleware.Auth(func(w http.ResponseWriter, r *http.Request) {
 		handlers.TaskDoneHandler(w, r, db)
-	})
+	}))
 
 	if err = http.ListenAndServe(":"+strconv.Itoa(port), nil); err != nil {
 		log.Fatalf("Failed to start server: %v", err)

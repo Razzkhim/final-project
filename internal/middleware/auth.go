@@ -13,9 +13,12 @@ func Auth(next http.HandlerFunc) http.HandlerFunc {
 		if len(pass) > 0 {
 			var token string
 			cookie, err := r.Cookie("token")
-			if err == nil {
-				token = cookie.Value
+			if err != nil {
+				http.Error(w, "Authentification required", http.StatusUnauthorized)
+				return
 			}
+
+			token = cookie.Value
 
 			jwtToken, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 				return config.JWTKey, nil

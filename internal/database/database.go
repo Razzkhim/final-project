@@ -24,7 +24,7 @@ func InitDB() (*sql.DB, error) {
 
 	db, err := sql.Open("sqlite", dbFile)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error while open db: %w", err)
 	}
 
 	if install {
